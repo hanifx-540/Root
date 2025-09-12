@@ -3,12 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Shop & Checkout</title>
+<title>Hanif-Store</title>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 <style>
 body {font-family:'Roboto', sans-serif; margin:0; padding:0; background:#f0f2f5;}
-header {background:#4CAF50; color:white; padding:20px; text-align:center;}
-h1 {margin:0;}
+header {background:#4CAF50; color:white; padding:30px; text-align:center; perspective:1000px;}
+header h1 {margin:0; font-size:2.5em; animation:spin3d 5s linear infinite;}
+@keyframes spin3d {
+  0% {transform: rotateY(0deg);}
+  100% {transform: rotateY(360deg);}
+}
 #product-list {display:flex; flex-wrap:wrap; justify-content:center; padding:20px;}
 .product {background:white; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1); margin:15px; width:220px; text-align:center; padding:15px; transition:transform 0.3s;}
 .product:hover {transform: translateY(-10px);}
@@ -17,18 +21,22 @@ h3 {margin:10px 0 5px;}
 p {margin:5px 0;}
 button {background:#4CAF50; color:white; border:none; padding:10px 15px; border-radius:5px; cursor:pointer; transition:background 0.3s;}
 button:hover {background:#45a049;}
-#checkout {max-width:500px; margin:30px auto; background:white; padding:20px; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1);}
-input, textarea {display:block; width:100%; margin-top:10px; padding:10px; border-radius:5px; border:1px solid #ccc; box-sizing:border-box;}
+#checkout {max-width:600px; margin:30px auto; background:white; padding:25px; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1);}
+input, textarea {display:block; width:100%; margin-top:15px; padding:12px; border-radius:5px; border:1px solid #ccc; box-sizing:border-box; font-size:1em;}
+#add-product {max-width:500px; margin:30px auto; background:#e3f2fd; padding:20px; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1);}
+#add-product h3 {margin-top:0;}
 </style>
 </head>
 <body>
 
 <header>
-<h1>Shop & Checkout</h1>
+<h1>Hanif-Store</h1>
 </header>
 
+<!-- Products Section -->
 <div id="product-list"></div>
 
+<!-- Checkout Section -->
 <div id="checkout">
 <h2>Checkout (COD)</h2>
 <div id="cart"></div>
@@ -38,59 +46,69 @@ input, textarea {display:block; width:100%; margin-top:10px; padding:10px; borde
   <input type="text" name="phone" placeholder="ফোন নম্বর" required>
   <textarea name="address" placeholder="ঠিকানা" required></textarea>
   <input type="hidden" name="payment_method" value="COD">
-  <button type="submit">অর্ডার দিন</button>
+  <button type="submit" style="font-size:1.2em;">অর্ডার দিন</button>
+</form>
+</div>
+
+<!-- Add New Product (Admin) -->
+<div id="add-product">
+<h3>Add New Product</h3>
+<form id="addProductForm">
+  <input type="text" name="name" placeholder="Product Name" required>
+  <input type="number" name="price" placeholder="Price (৳)" required>
+  <input type="text" name="image" placeholder="Image URL (relative or absolute)" required>
+  <textarea name="description" placeholder="Description" required></textarea>
+  <button type="submit">Add Product</button>
 </form>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
 <script>
-emailjs.init("FGfcctzHQo1oL78Zh"); // Public Key
+// EmailJS init
+emailjs.init("FGfcctzHQo1oL78Zh");
 
-// Products data (একই ফাইলে, JSON মত)
-const products = [
+// Initial products array
+let products = [
   {"id":1,"name":"T-Shirt","price":450,"image":"images/tshirt.jpg","description":"Cotton T-Shirt"},
   {"id":2,"name":"Shoes","price":1200,"image":"images/shoes.jpg","description":"Comfortable Running Shoes"},
   {"id":3,"name":"Cap","price":250,"image":"images/cap.jpg","description":"Stylish Baseball Cap"}
 ];
 
-const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+let cart = JSON.parse(localStorage.getItem('cart') || '[]');
 
-// Load Products
-const container = document.getElementById('product-list');
-products.forEach(p=>{
-  container.innerHTML += `
-    <div class="product" data-name="${p.name}" data-price="${p.price}">
-      <img src="${p.image}" alt="${p.name}">
-      <h3>${p.name}</h3>
-      <p>${p.description}</p>
-      <p>Price: ${p.price}৳</p>
-      <button class="add-to-cart">Add to Cart</button>
-    </div>
-  `;
-});
-
-// Add to Cart
-document.querySelectorAll('.add-to-cart').forEach(btn=>{
-  btn.addEventListener('click', e=>{
-    const product = e.target.closest('.product');
-    const itemIndex = cart.findIndex(i=>i.name===product.dataset.name);
-    if(itemIndex>-1){
-      cart[itemIndex].qty +=1;
-    } else {
-      cart.push({name:product.dataset.name, price:parseFloat(product.dataset.price), qty:1});
-    }
-    localStorage.setItem('cart', JSON.stringify(cart));
-    alert(`${product.dataset.name} added to cart`);
-    showCart();
+// Functions
+function renderProducts(){
+  const container = document.getElementById('product-list');
+  container.innerHTML='';
+  products.forEach(p=>{
+    container.innerHTML += `
+      <div class="product" data-name="${p.name}" data-price="${p.price}">
+        <img src="${p.image}" alt="${p.name}">
+        <h3>${p.name}</h3>
+        <p>${p.description}</p>
+        <p>Price: ${p.price}৳</p>
+        <button class="add-to-cart">Add to Cart</button>
+      </div>
+    `;
   });
-});
 
-// Show cart in checkout
-const cartDiv = document.getElementById('cart');
+  document.querySelectorAll('.add-to-cart').forEach(btn=>{
+    btn.addEventListener('click', e=>{
+      const product = e.target.closest('.product');
+      const itemIndex = cart.findIndex(i=>i.name===product.dataset.name);
+      if(itemIndex>-1){ cart[itemIndex].qty+=1; }
+      else{ cart.push({name:product.dataset.name, price:parseFloat(product.dataset.price), qty:1}); }
+      localStorage.setItem('cart', JSON.stringify(cart));
+      alert(`${product.dataset.name} added to cart`);
+      showCart();
+    });
+  });
+}
+
 function showCart(){
-  if(cart.length===0){
-    cartDiv.innerHTML='<p>Cart is empty!</p>';
-  } else {
+  const cartDiv = document.getElementById('cart');
+  if(cart.length===0){ cartDiv.innerHTML='<p>Cart is empty!</p>'; }
+  else{
     let html='<h3>Your Cart</h3>';
     let total=0;
     cart.forEach(i=>{
@@ -101,23 +119,38 @@ function showCart(){
     cartDiv.innerHTML=html;
   }
 }
+
+// Initial render
+renderProducts();
 showCart();
 
 // Checkout form
 document.getElementById('checkoutForm').addEventListener('submit', function(e){
   e.preventDefault();
-  if(cart.length===0){alert('Cart is empty!'); return;}
+  if(cart.length===0){ alert('Cart is empty!'); return; }
 
   emailjs.sendForm('service_bwpm7gt','template_dou7wq4',this)
-    .then(function(){
+    .then(()=>{
       alert('অর্ডার পাঠানো হয়েছে! আমরা শিগগিরই যোগাযোগ করব।');
-      localStorage.removeItem('cart');
-      cart.length=0;
-      showCart();
-      document.getElementById('checkoutForm').reset();
-    }, function(error){
-      alert('Error: '+JSON.stringify(error));
-    });
+      localStorage.removeItem('cart'); cart=[]; showCart(); this.reset();
+    }, error=>{ alert('Error: '+JSON.stringify(error)); });
+});
+
+// Add new product form
+document.getElementById('addProductForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  const form = e.target;
+  const newProduct = {
+    id: products.length+1,
+    name: form.name.value,
+    price: parseFloat(form.price.value),
+    image: form.image.value,
+    description: form.description.value
+  };
+  products.push(newProduct);
+  renderProducts();
+  form.reset();
+  alert(`${newProduct.name} added successfully!`);
 });
 </script>
 
