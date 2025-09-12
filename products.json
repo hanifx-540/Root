@@ -1,0 +1,23 @@
+[
+  {
+    "id": 1,
+    "name": "T-Shirt",
+    "price": 450,
+    "image": "images/tshirt.jpg",
+    "description": "Cotton T-Shirt"
+  },
+  {
+    "id": 2,
+    "name": "Shoes",
+    "price": 1200,
+    "image": "images/shoes.jpg",
+    "description": "Comfortable Running Shoes"
+  },
+  {
+    "id": 3,
+    "name": "Cap",
+    "price": 250,
+    "image": "images/cap.jpg",
+    "description": "Stylish Baseball Cap"
+  }
+]
