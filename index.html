@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shop & Checkout</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+<style>
+body {font-family:'Roboto', sans-serif; margin:0; padding:0; background:#f0f2f5;}
+header {background:#4CAF50; color:white; padding:20px; text-align:center;}
+h1 {margin:0;}
+#product-list {display:flex; flex-wrap:wrap; justify-content:center; padding:20px;}
+.product {background:white; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1); margin:15px; width:220px; text-align:center; padding:15px; transition:transform 0.3s;}
+.product:hover {transform: translateY(-10px);}
+img {width:180px; height:180px; object-fit:cover; border-radius:8px;}
+h3 {margin:10px 0 5px;}
+p {margin:5px 0;}
+button {background:#4CAF50; color:white; border:none; padding:10px 15px; border-radius:5px; cursor:pointer; transition:background 0.3s;}
+button:hover {background:#45a049;}
+#checkout {max-width:500px; margin:30px auto; background:white; padding:20px; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1);}
+input, textarea {display:block; width:100%; margin-top:10px; padding:10px; border-radius:5px; border:1px solid #ccc; box-sizing:border-box;}
+</style>
+</head>
+<body>
+
+<header>
+<h1>Shop & Checkout</h1>
+</header>
+
+<div id="product-list"></div>
+
+<div id="checkout">
+<h2>Checkout (COD)</h2>
+<div id="cart"></div>
+<form id="checkoutForm">
+  <input type="text" name="customer_name" placeholder="আপনার নাম" required>
+  <input type="email" name="customer_email" placeholder="আপনার ইমেইল" required>
+  <input type="text" name="phone" placeholder="ফোন নম্বর" required>
+  <textarea name="address" placeholder="ঠিকানা" required></textarea>
+  <input type="hidden" name="payment_method" value="COD">
+  <button type="submit">অর্ডার দিন</button>
+</form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+<script>
+emailjs.init("FGfcctzHQo1oL78Zh"); // Public Key
+
+// Products data (একই ফাইলে, JSON মত)
+const products = [
+  {"id":1,"name":"T-Shirt","price":450,"image":"images/tshirt.jpg","description":"Cotton T-Shirt"},
+  {"id":2,"name":"Shoes","price":1200,"image":"images/shoes.jpg","description":"Comfortable Running Shoes"},
+  {"id":3,"name":"Cap","price":250,"image":"images/cap.jpg","description":"Stylish Baseball Cap"}
+];
+
+const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+
+// Load Products
+const container = document.getElementById('product-list');
+products.forEach(p=>{
+  container.innerHTML += `
+    <div class="product" data-name="${p.name}" data-price="${p.price}">
+      <img src="${p.image}" alt="${p.name}">
+      <h3>${p.name}</h3>
+      <p>${p.description}</p>
+      <p>Price: ${p.price}৳</p>
+      <button class="add-to-cart">Add to Cart</button>
+    </div>
+  `;
+});
+
+// Add to Cart
+document.querySelectorAll('.add-to-cart').forEach(btn=>{
+  btn.addEventListener('click', e=>{
+    const product = e.target.closest('.product');
+    const itemIndex = cart.findIndex(i=>i.name===product.dataset.name);
+    if(itemIndex>-1){
+      cart[itemIndex].qty +=1;
+    } else {
+      cart.push({name:product.dataset.name, price:parseFloat(product.dataset.price), qty:1});
+    }
+    localStorage.setItem('cart', JSON.stringify(cart));
+    alert(`${product.dataset.name} added to cart`);
+    showCart();
+  });
+});
+
+// Show cart in checkout
+const cartDiv = document.getElementById('cart');
+function showCart(){
+  if(cart.length===0){
+    cartDiv.innerHTML='<p>Cart is empty!</p>';
+  } else {
+    let html='<h3>Your Cart</h3>';
+    let total=0;
+    cart.forEach(i=>{
+      html+=`<p>${i.name} x ${i.qty} = ${i.price*i.qty}৳</p>`;
+      total+=i.price*i.qty;
+    });
+    html+=`<p><strong>Total: ${total}৳</strong></p>`;
+    cartDiv.innerHTML=html;
+  }
+}
+showCart();
+
+// Checkout form
+document.getElementById('checkoutForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  if(cart.length===0){alert('Cart is empty!'); return;}
+
+  emailjs.sendForm('service_bwpm7gt','template_dou7wq4',this)
+    .then(function(){
+      alert('অর্ডার পাঠানো হয়েছে! আমরা শিগগিরই যোগাযোগ করব।');
+      localStorage.removeItem('cart');
+      cart.length=0;
+      showCart();
+      document.getElementById('checkoutForm').reset();
+    }, function(error){
+      alert('Error: '+JSON.stringify(error));
+    });
+});
+</script>
+
+</body>
+    </html>
